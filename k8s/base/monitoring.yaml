@@ -21,15 +21,17 @@ spec:
           annotations:
             summary: "Order service error rate is above 10%"
             description: "The order-service in the redhat-gear namespace has an HTTP 5xx error rate of {{ $value | humanizePercentage }}, exceeding the 10% threshold. Investigate upstream dependencies."
-        - alert: InventoryServiceDown
+        - alert: InventoryServiceErrorRate
           expr: |
-            up{job="inventory-service", namespace="redhat-gear"} == 0
-            or
-            absent(up{job="inventory-service", namespace="redhat-gear"})
+            (
+              sum(rate(istio_requests_total{destination_service_name="inventory-service",response_code=~"5..",namespace="redhat-gear"}[2m]))
+              /
+              sum(rate(istio_requests_total{destination_service_name="inventory-service",namespace="redhat-gear"}[2m]))
+            ) > 0.1
           for: 1m
           labels:
             severity: warning
             namespace: redhat-gear
           annotations:
-            summary: "Inventory service health check failing"
-            description: "The inventory-service in the redhat-gear namespace has been unreachable for more than 1 minute."
+            summary: "Inventory service error rate is above 10%"
+            description: "The inventory-service in the redhat-gear namespace has an HTTP 5xx error rate of {{ $value | humanizePercentage }}. This may indicate a problem with an upstream dependency."
