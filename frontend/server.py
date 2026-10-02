@@ -14,6 +14,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path.startswith("/api/"):
             self._proxy("GET")
+        elif self.path == "/health":
+            self._respond_json(200, {"status": "ok", "service": "frontend"})
         elif self.path == "/" or self.path == "/index.html":
             self._serve_file("index.html", "text/html")
         elif self.path.startswith("/images/"):
@@ -29,6 +31,14 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self._proxy("POST")
         else:
             self.send_error(404)
+
+    def _respond_json(self, code, body):
+        data = json.dumps(body).encode()
+        self.send_response(code)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
 
     def _serve_file(self, name, content_type):
         filepath = STATIC_DIR / name
