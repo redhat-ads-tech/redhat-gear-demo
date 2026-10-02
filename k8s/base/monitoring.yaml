@@ -21,6 +21,7 @@ spec:
           annotations:
             summary: "Order service error rate is above 10%"
             description: "The order-service in the redhat-gear namespace has an HTTP 5xx error rate exceeding the 10% threshold. Investigate upstream dependencies."
+            message: "Order service error rate is above 10%. Investigate upstream dependencies."
         - alert: InventoryServiceErrorRate
           expr: |
             (
@@ -35,3 +36,4 @@ spec:
           annotations:
             summary: "Inventory service error rate is above 10%"
             description: "The inventory-service in the redhat-gear namespace has an HTTP 5xx error rate exceeding 10%. This may indicate a problem with an upstream dependency."
+            message: "Inventory service error rate is above 10%. Check upstream dependencies."
