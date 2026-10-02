@@ -18,6 +18,8 @@ spec:
           labels:
             severity: critical
             namespace: redhat-gear
+            service: order-service
+            app: order-service
           annotations:
             summary: "Order service error rate is above 10%"
             description: "The order-service in the redhat-gear namespace has an HTTP 5xx error rate of {{ $value | humanizePercentage }}, exceeding the 10% threshold. Investigate upstream dependencies."
@@ -32,6 +34,8 @@ spec:
           labels:
             severity: warning
             namespace: redhat-gear
+            service: inventory-service
+            app: inventory-service
           annotations:
             summary: "Inventory service error rate is above 10%"
             description: "The inventory-service in the redhat-gear namespace has an HTTP 5xx error rate of {{ $value | humanizePercentage }}. This may indicate a problem with an upstream dependency."
