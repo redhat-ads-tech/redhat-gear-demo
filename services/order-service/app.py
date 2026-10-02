@@ -60,12 +60,20 @@ class Handler(BaseHTTPRequestHandler):
 
         log("info", f"New order received: {len(order.get('items', []))} items", tid)
 
+        items = [{"id": i.get("productId", i.get("id")),
+                  "name": i.get("name"), "quantity": i.get("quantity", 1),
+                  "price": i.get("unitPrice", i.get("price", 0))} for i in order.get("items", [])]
+
         try:
             log("info", "Calling inventory-service /check", tid)
             inv = call_service("http://inventory-service:8080/check",
-                               {"items": order.get("items", []),
+                               {"items": items,
                                 "payment_token": "tok_" + uuid.uuid4().hex[:12]}, tid)
             log("info", f"Inventory response: {json.dumps(inv)}", tid)
+            if not inv.get("available", True):
+                self._respond(400, {"error": "Items unavailable",
+                                    "detail": inv.get("reason", "out of stock")})
+                return
         except Exception as e:
             log("error", f"Inventory check failed: {e}", tid)
             self._respond(502, {"error": "Inventory check failed",
