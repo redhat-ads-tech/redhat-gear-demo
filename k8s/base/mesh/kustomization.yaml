@@ -4,3 +4,4 @@ resources:
   - gateway.yaml
   - virtualservice.yaml
   - destination-rules.yaml
+  - route.yaml
