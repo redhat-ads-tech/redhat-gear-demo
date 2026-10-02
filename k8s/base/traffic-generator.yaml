@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traffic-generator
+  namespace: redhat-gear
+  labels:
+    app: traffic-generator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: traffic-generator
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+      labels:
+        app: traffic-generator
+        istio.io/dataplane-mode: "none"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: traffic-generator
+          image: registry.access.redhat.com/ubi9/ubi:latest
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              echo "Starting traffic generator"
+              while true; do
+                curl -s -o /dev/null -w "%{http_code}" \
+                  -X POST http://order-service:8080/orders \
+                  -H "Content-Type: application/json" \
+                  -d '{"items":[{"id":"fedora-hat","name":"Shadowman Fedora","quantity":1,"price":34.99}],"shipping":{"name":"Demo User","address":"100 E Davie St, Raleigh, NC 27601"}}'
+                echo " $(date -u +%H:%M:%S)"
+                sleep 10
+              done
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi

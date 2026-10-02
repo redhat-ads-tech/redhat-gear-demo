@@ -16,3 +16,4 @@ resources:
   - mesh
   - monitoring.yaml
   - podmonitor.yaml
+  - traffic-generator.yaml
