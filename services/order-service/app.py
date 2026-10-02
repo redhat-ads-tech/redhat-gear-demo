@@ -7,13 +7,28 @@ def log(level, message, trace_id=""):
                        "service": "order-service", "trace_id": trace_id, "msg": message}),
           flush=True)
 
+class ServiceError(Exception):
+    def __init__(self, code, body):
+        self.code = code
+        self.body = body
+        super().__init__(f"HTTP {code}: {body}")
+
 def call_service(url, data=None, trace_id="", timeout=5):
     headers = {"Content-Type": "application/json", "X-Trace-ID": trace_id}
     body = json.dumps(data).encode() if data is not None else None
     req = urllib.request.Request(url, data=body, headers=headers,
                                 method="POST" if data is not None else "GET")
-    resp = urllib.request.urlopen(req, timeout=timeout)
-    return json.loads(resp.read())
+    try:
+        resp = urllib.request.urlopen(req, timeout=timeout)
+        return json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        err_body = e.read().decode()
+        try:
+            err_json = json.loads(err_body)
+            detail = err_json.get("detail", err_json.get("error", err_body))
+        except Exception:
+            detail = err_body
+        raise ServiceError(e.code, detail)
 
 def check_dep(url, trace_id):
     try:
