@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: istio-proxies
+  namespace: redhat-gear
+spec:
+  podMetricsEndpoints:
+    - path: /stats/prometheus
+      interval: 15s
+      relabelings:
+        - action: keep
+          regex: istio-proxy
+          sourceLabels:
+            - __meta_kubernetes_container_name
+  selector:
+    matchExpressions:
+      - key: istio-prometheus-ignore
+        operator: DoesNotExist

@@ -15,3 +15,4 @@ resources:
   - payment-validator
   - mesh
   - monitoring.yaml
+  - podmonitor.yaml
