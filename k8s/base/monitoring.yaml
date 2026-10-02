@@ -10,26 +10,26 @@ spec:
         - alert: OrderErrorRateHigh
           expr: |
             (
-              sum by(namespace, pod) (rate(istio_requests_total{destination_service_name="order-service",response_code=~"5.."}[30s]))
+              sum by(namespace) (rate(istio_requests_total{destination_service_name="order-service",response_code=~"5..",reporter="destination"}[30s]))
               /
-              sum by(namespace, pod) (rate(istio_requests_total{destination_service_name="order-service"}[30s]))
+              sum by(namespace) (rate(istio_requests_total{destination_service_name="order-service",reporter="destination"}[30s]))
             ) > 0.1
           for: 15s
           labels:
             severity: critical
           annotations:
             summary: "Order service error rate is above 10%"
-            description: "The order-service in the redhat-gear namespace has an HTTP 5xx error rate of {{ $value | humanizePercentage }}, exceeding the 10% threshold. Investigate upstream dependencies."
+            description: "The order-service in the redhat-gear namespace has an HTTP 5xx error rate exceeding the 10% threshold. Investigate upstream dependencies."
         - alert: InventoryServiceErrorRate
           expr: |
             (
-              sum by(namespace, pod) (rate(istio_requests_total{destination_service_name="inventory-service",response_code=~"5..",namespace="redhat-gear"}[30s]))
+              sum by(namespace) (rate(istio_requests_total{destination_service_name="inventory-service",response_code=~"5..",namespace="redhat-gear",reporter="destination"}[30s]))
               /
-              sum by(namespace, pod) (rate(istio_requests_total{destination_service_name="inventory-service",namespace="redhat-gear"}[30s]))
+              sum by(namespace) (rate(istio_requests_total{destination_service_name="inventory-service",namespace="redhat-gear",reporter="destination"}[30s]))
             ) > 0.1
           for: 15s
           labels:
             severity: warning
           annotations:
             summary: "Inventory service error rate is above 10%"
-            description: "The inventory-service in the redhat-gear namespace has an HTTP 5xx error rate of {{ $value | humanizePercentage }}. This may indicate a problem with an upstream dependency."
+            description: "The inventory-service in the redhat-gear namespace has an HTTP 5xx error rate exceeding 10%. This may indicate a problem with an upstream dependency."
