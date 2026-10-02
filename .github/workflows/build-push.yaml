@@ -1,0 +1,69 @@
+name: Build and Push Container Images
+
+on:
+  push:
+    branches: [main]
+    tags: ['*']
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: frontend
+            context: frontend
+            image: quay.io/redhat-ads-tech/redhat-gear-frontend
+          - name: order-service
+            context: services/order-service
+            image: quay.io/redhat-ads-tech/redhat-gear-order-service
+          - name: inventory-service
+            context: services/inventory-service
+            image: quay.io/redhat-ads-tech/redhat-gear-inventory-service
+          - name: shipping-service
+            context: services/shipping-service
+            image: quay.io/redhat-ads-tech/redhat-gear-shipping-service
+          - name: payment-validator
+            context: services/payment-validator
+            image: quay.io/redhat-ads-tech/redhat-gear-payment-validator
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Quay.io
+        if: github.event_name == 'push'
+        uses: docker/login-action@v3
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASSWORD }}
+
+      - name: Determine tags
+        id: tags
+        run: |
+          TAGS="${{ matrix.image }}:${{ github.sha }}"
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            TAGS="$TAGS,${{ matrix.image }}:${{ github.ref_name }}"
+            TAGS="$TAGS,${{ matrix.image }}:latest"
+          elif [[ "${{ github.ref }}" == refs/heads/main ]]; then
+            TAGS="$TAGS,${{ matrix.image }}:latest"
+          fi
+          echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
+
+      - name: Build image
+        run: |
+          IFS=',' read -ra TAG_ARRAY <<< "${{ steps.tags.outputs.tags }}"
+          BUILD_ARGS=""
+          for tag in "${TAG_ARRAY[@]}"; do
+            BUILD_ARGS="$BUILD_ARGS -t $tag"
+          done
+          docker build $BUILD_ARGS ${{ matrix.context }}
+
+      - name: Push image
+        if: github.event_name == 'push'
+        run: |
+          IFS=',' read -ra TAG_ARRAY <<< "${{ steps.tags.outputs.tags }}"
+          for tag in "${TAG_ARRAY[@]}"; do
+            docker push "$tag"
+          done

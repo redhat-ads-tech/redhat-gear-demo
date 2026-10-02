@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Red Hat Gear</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--rh-red:#EE0000;--rh-dark:#151515;--rh-gray:#F0F0F0;--rh-white:#FFFFFF;--ups-brown:#644117;--shadow:0 2px 8px rgba(0,0,0,.1);--radius:8px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--rh-gray);color:var(--rh-dark);min-height:100vh;display:flex;flex-direction:column}
+a{color:var(--rh-red);text-decoration:none}
+
+/* Header */
+header{background:var(--rh-dark);color:var(--rh-white);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:.75rem;font-size:1.25rem;font-weight:700;letter-spacing:-.5px}
+.logo svg{width:36px;height:36px}
+.logo span{color:var(--rh-red)}
+.header-actions{display:flex;align-items:center;gap:1.5rem}
+.cart-btn{background:none;border:none;color:var(--rh-white);cursor:pointer;font-size:1.5rem;position:relative;padding:4px;transition:transform .15s}
+.cart-btn:hover{transform:scale(1.1)}
+.cart-count{position:absolute;top:-4px;right:-8px;background:var(--rh-red);color:var(--rh-white);font-size:.7rem;font-weight:700;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;transition:transform .2s}
+.cart-count.bump{animation:bump .3s ease}
+@keyframes bump{0%,100%{transform:scale(1)}50%{transform:scale(1.4)}}
+
+/* Status bar */
+.status-bar{background:var(--rh-dark);border-top:1px solid #333;padding:.25rem 2rem;display:flex;gap:1.5rem;font-size:.7rem;color:#999}
+.status-item{display:flex;align-items:center;gap:.35rem}
+.status-dot{width:7px;height:7px;border-radius:50%;background:#555;transition:background .3s}
+.status-dot.ok{background:#73BF69}
+.status-dot.err{background:var(--rh-red)}
+
+/* Hero */
+.hero{background:linear-gradient(135deg,var(--rh-dark) 0%,#2a0000 50%,var(--rh-red) 100%);color:var(--rh-white);padding:3rem 2rem;text-align:center}
+.hero h1{font-size:2.5rem;font-weight:800;margin-bottom:.5rem}
+.hero p{font-size:1.1rem;opacity:.85;max-width:500px;margin:0 auto}
+
+/* Products */
+.products{max-width:1200px;margin:2rem auto;padding:0 1rem}
+.products h2{font-size:1.5rem;margin-bottom:1.5rem;padding-left:.5rem}
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem}
+.product-card{background:var(--rh-white);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;transition:transform .2s,box-shadow .2s;display:flex;flex-direction:column}
+.product-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.product-img{height:200px;display:flex;align-items:center;justify-content:center;font-size:5rem;background:linear-gradient(135deg,#fafafa,#eee);user-select:none}
+.product-info{padding:1.25rem;flex:1;display:flex;flex-direction:column}
+.product-name{font-size:1.1rem;font-weight:700;margin-bottom:.25rem}
+.product-desc{font-size:.85rem;color:#666;margin-bottom:1rem;flex:1}
+.product-bottom{display:flex;align-items:center;justify-content:space-between}
+.product-price{font-size:1.25rem;font-weight:800;color:var(--rh-dark)}
+.add-btn{background:var(--rh-red);color:var(--rh-white);border:none;padding:.5rem 1.25rem;border-radius:var(--radius);font-size:.85rem;font-weight:600;cursor:pointer;transition:background .15s,transform .1s}
+.add-btn:hover{background:#cc0000}
+.add-btn:active{transform:scale(.95)}
+.add-btn.added{background:#73BF69}
+
+/* Cart panel */
+.cart-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;opacity:0;pointer-events:none;transition:opacity .25s}
+.cart-overlay.open{opacity:1;pointer-events:auto}
+.cart-panel{position:fixed;top:0;right:0;bottom:0;width:420px;max-width:90vw;background:var(--rh-white);z-index:201;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:-4px 0 24px rgba(0,0,0,.15)}
+.cart-panel.open{transform:translateX(0)}
+.cart-header{padding:1.25rem 1.5rem;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between}
+.cart-header h2{font-size:1.2rem}
+.cart-close{background:none;border:none;font-size:1.5rem;cursor:pointer;color:#999;padding:4px}
+.cart-close:hover{color:var(--rh-dark)}
+.cart-items{flex:1;overflow-y:auto;padding:1rem 1.5rem}
+.cart-empty{text-align:center;color:#999;padding:3rem 0;font-size:.95rem}
+.cart-item{display:flex;align-items:center;gap:1rem;padding:.75rem 0;border-bottom:1px solid #f0f0f0}
+.cart-item-icon{font-size:1.8rem;width:48px;text-align:center}
+.cart-item-details{flex:1}
+.cart-item-name{font-weight:600;font-size:.9rem}
+.cart-item-price{font-size:.8rem;color:#666}
+.cart-item-qty{display:flex;align-items:center;gap:.5rem}
+.qty-btn{width:28px;height:28px;border:1px solid #ddd;border-radius:4px;background:var(--rh-white);cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:background .1s}
+.qty-btn:hover{background:var(--rh-gray)}
+.cart-item-qty span{font-weight:600;min-width:20px;text-align:center}
+.cart-footer{border-top:1px solid #eee;padding:1.25rem 1.5rem}
+.cart-total{display:flex;justify-content:space-between;font-size:1.1rem;font-weight:700;margin-bottom:1rem}
+.ups-badge{display:flex;align-items:center;gap:.5rem;font-size:.8rem;color:var(--ups-brown);margin-bottom:1rem;padding:.5rem .75rem;background:#faf5ef;border-radius:6px;border:1px solid #e8ddd0}
+.ups-shield{width:24px;height:28px;flex-shrink:0}
+.checkout-btn{width:100%;background:var(--rh-red);color:var(--rh-white);border:none;padding:.85rem;border-radius:var(--radius);font-size:1rem;font-weight:700;cursor:pointer;transition:background .15s}
+.checkout-btn:hover{background:#cc0000}
+.checkout-btn:disabled{background:#ccc;cursor:not-allowed}
+
+/* Order result overlay */
+.order-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:none;align-items:center;justify-content:center;padding:1rem}
+.order-overlay.show{display:flex}
+.order-modal{background:var(--rh-white);border-radius:12px;padding:2.5rem;max-width:480px;width:100%;text-align:center;box-shadow:0 16px 48px rgba(0,0,0,.2);animation:modalIn .3s ease}
+@keyframes modalIn{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+.order-modal h2{font-size:1.5rem;margin-bottom:.75rem}
+.order-modal.success h2{color:#1a7a1a}
+.order-modal.error h2{color:var(--rh-red)}
+.order-modal p{color:#555;font-size:.95rem;margin-bottom:.5rem}
+.tracking-box{background:#faf5ef;border:2px solid var(--ups-brown);border-radius:var(--radius);padding:1rem;margin:1rem 0;display:flex;align-items:center;gap:1rem;text-align:left}
+.tracking-box .info{flex:1}
+.tracking-box .label{font-size:.75rem;color:var(--ups-brown);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.tracking-box .number{font-size:1.1rem;font-weight:700;color:var(--rh-dark);font-family:'Courier New',monospace}
+.error-details{background:#fff0f0;border:1px solid #ffcccc;border-radius:var(--radius);padding:1rem;margin:1rem 0;text-align:left;font-size:.85rem;color:#aa0000;font-family:'Courier New',monospace;word-break:break-word}
+.modal-close-btn{background:var(--rh-dark);color:var(--rh-white);border:none;padding:.65rem 2rem;border-radius:var(--radius);font-size:.9rem;font-weight:600;cursor:pointer;margin-top:1rem;transition:background .15s}
+.modal-close-btn:hover{background:#333}
+
+/* Spinner */
+.spinner{display:inline-block;width:40px;height:40px;border:4px solid #eee;border-top-color:var(--rh-red);border-radius:50%;animation:spin .8s linear infinite;margin:1rem auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.processing{display:none;flex-direction:column;align-items:center;gap:.75rem;padding:2rem}
+.processing.show{display:flex}
+.processing p{color:#666;font-size:.95rem}
+
+/* Footer */
+footer{background:var(--rh-dark);color:#999;padding:1.5rem 2rem;text-align:center;font-size:.8rem;margin-top:auto;display:flex;align-items:center;justify-content:center;gap:.5rem}
+footer svg{width:18px;height:18px;opacity:.6}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 36 36" fill="none"><path d="M18 2L33 10v16L18 34 3 26V10L18 2z" fill="#EE0000"/><path d="M18 8l10 5.5v11L18 30 8 24.5v-11L18 8z" fill="#151515"/><path d="M18 14l4 2.2v4.4L18 23l-4-2.4v-4.4L18 14z" fill="#EE0000"/></svg>
+    <div><span>Red Hat</span> Gear</div>
+  </div>
+  <div class="header-actions">
+    <button class="cart-btn" onclick="toggleCart()" aria-label="Shopping cart">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+      <span class="cart-count" id="cartCount">0</span>
+    </button>
+  </div>
+</header>
+
+<div class="status-bar">
+  <div class="status-item"><span class="status-dot" id="st-order"></span>order-service</div>
+  <div class="status-item"><span class="status-dot" id="st-inventory"></span>inventory-service</div>
+  <div class="status-item"><span class="status-dot" id="st-shipping"></span>shipping-service</div>
+</div>
+
+<section class="hero">
+  <h1>Official Red Hat Gear</h1>
+  <p>Premium merchandise for the open source community. Wear the brand you build with.</p>
+</section>
+
+<section class="products">
+  <h2>Shop All</h2>
+  <div class="product-grid" id="productGrid"></div>
+</section>
+
+<div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+<div class="cart-panel" id="cartPanel">
+  <div class="cart-header">
+    <h2>Your Cart</h2>
+    <button class="cart-close" onclick="toggleCart()">&times;</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer">
+    <div class="ups-badge">
+      <svg class="ups-shield" viewBox="0 0 24 28" fill="none">
+        <path d="M12 0L0 4v12c0 7 12 12 12 12s12-5 12-12V4L12 0z" fill="#644117"/>
+        <path d="M12 3L3 6v9.5c0 5.5 9 9.5 9 9.5s9-4 9-9.5V6L12 3z" fill="#FFB500"/>
+        <path d="M7 14v-3a5 5 0 0110 0v3" stroke="#644117" stroke-width="1.5" fill="none"/>
+        <rect x="6" y="13" width="12" height="8" rx="1" fill="#644117"/>
+      </svg>
+      <div>Shipped via <strong>UPS</strong> &mdash; Free ground shipping on all orders</div>
+    </div>
+    <div class="cart-total">
+      <span>Total</span>
+      <span id="cartTotal">$0.00</span>
+    </div>
+    <div class="processing" id="processing">
+      <div class="spinner"></div>
+      <p>Processing your order...</p>
+    </div>
+    <button class="checkout-btn" id="checkoutBtn" onclick="placeOrder()" disabled>Place Order</button>
+  </div>
+</div>
+
+<div class="order-overlay" id="orderOverlay">
+  <div class="order-modal" id="orderModal"></div>
+</div>
+
+<footer>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><circle cx="12" cy="6" r="2"/><line x1="6" y1="6" x2="12" y2="6"/><line x1="12" y1="6" x2="18" y2="6"/><line x1="6" y1="6" x2="6" y2="18"/><line x1="18" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="12" y2="18"/><line x1="12" y1="18" x2="18" y2="18"/><line x1="6" y1="6" x2="12" y2="18"/><line x1="18" y1="6" x2="12" y2="18"/></svg>
+  Powered by Red Hat OpenShift Service Mesh
+</footer>
+
+<script>
+const PRODUCTS = [
+  { id: 'fedora-hat', name: 'Shadowman Fedora', price: 34.99, desc: 'Classic fedora with embroidered Shadowman logo. One size fits most.', icon: '🎩' },
+  { id: 'classic-tee', name: 'Red Hat Classic Tee', price: 29.99, desc: 'Soft-washed cotton tee with the iconic Red Hat logo.', icon: '👕' },
+  { id: 'hoodie', name: 'OpenShift Hoodie', price: 59.99, desc: 'Heavyweight hoodie with OpenShift logo. Perfect for late-night deploys.', icon: '🧥' },
+  { id: 'enamel-pin', name: 'Ansible Pin Set', price: 12.99, desc: 'Set of 3 enamel pins: Ansible, Podman, and CentOS Stream.', icon: '📌' },
+  { id: 'sticker-pack', name: 'Open Source Stickers', price: 8.99, desc: '15-pack of die-cut stickers. Linux, Kubernetes, Fedora, and more.', icon: '✨' },
+  { id: 'beanie', name: 'RHEL Knit Beanie', price: 24.99, desc: 'Warm knit beanie with embroidered RHEL wordmark. Acrylic blend.', icon: '🧢' }
+];
+
+let cart = {};
+
+function renderProducts() {
+  const grid = document.getElementById('productGrid');
+  grid.innerHTML = PRODUCTS.map(p => `
+    <div class="product-card">
+      <div class="product-img">${p.icon}</div>
+      <div class="product-info">
+        <div class="product-name">${p.name}</div>
+        <div class="product-desc">${p.desc}</div>
+        <div class="product-bottom">
+          <span class="product-price">$${p.price.toFixed(2)}</span>
+          <button class="add-btn" id="btn-${p.id}" onclick="addToCart('${p.id}')">Add to Cart</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function addToCart(id) {
+  cart[id] = (cart[id] || 0) + 1;
+  updateCart();
+  const btn = document.getElementById('btn-' + id);
+  btn.textContent = 'Added!';
+  btn.classList.add('added');
+  setTimeout(() => { btn.textContent = 'Add to Cart'; btn.classList.remove('added'); }, 800);
+  const badge = document.getElementById('cartCount');
+  badge.classList.remove('bump');
+  void badge.offsetWidth;
+  badge.classList.add('bump');
+}
+
+function updateCart() {
+  const items = document.getElementById('cartItems');
+  const totalEl = document.getElementById('cartTotal');
+  const countEl = document.getElementById('cartCount');
+  const btn = document.getElementById('checkoutBtn');
+  const ids = Object.keys(cart).filter(k => cart[k] > 0);
+  const totalCount = ids.reduce((s, k) => s + cart[k], 0);
+  countEl.textContent = totalCount;
+  btn.disabled = totalCount === 0;
+  if (ids.length === 0) {
+    items.innerHTML = '<div class="cart-empty">Your cart is empty</div>';
+    totalEl.textContent = '$0.00';
+    return;
+  }
+  let total = 0;
+  items.innerHTML = ids.map(id => {
+    const p = PRODUCTS.find(x => x.id === id);
+    const subtotal = p.price * cart[id];
+    total += subtotal;
+    return `<div class="cart-item">
+      <div class="cart-item-icon">${p.icon}</div>
+      <div class="cart-item-details">
+        <div class="cart-item-name">${p.name}</div>
+        <div class="cart-item-price">$${p.price.toFixed(2)} each</div>
+      </div>
+      <div class="cart-item-qty">
+        <button class="qty-btn" onclick="changeQty('${id}',-1)">&minus;</button>
+        <span>${cart[id]}</span>
+        <button class="qty-btn" onclick="changeQty('${id}',1)">+</button>
+      </div>
+    </div>`;
+  }).join('');
+  totalEl.textContent = '$' + total.toFixed(2);
+}
+
+function changeQty(id, delta) {
+  cart[id] = Math.max(0, (cart[id] || 0) + delta);
+  if (cart[id] === 0) delete cart[id];
+  updateCart();
+}
+
+function toggleCart() {
+  document.getElementById('cartOverlay').classList.toggle('open');
+  document.getElementById('cartPanel').classList.toggle('open');
+}
+
+async function placeOrder() {
+  const btn = document.getElementById('checkoutBtn');
+  const proc = document.getElementById('processing');
+  btn.style.display = 'none';
+  proc.classList.add('show');
+  const items = Object.keys(cart).map(id => {
+    const p = PRODUCTS.find(x => x.id === id);
+    return { productId: id, name: p.name, quantity: cart[id], unitPrice: p.price };
+  });
+  try {
+    const resp = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items })
+    });
+    const data = await resp.json();
+    if (resp.ok) {
+      showResult('success', data);
+      cart = {};
+      updateCart();
+      toggleCart();
+    } else {
+      showResult('error', data);
+    }
+  } catch (e) {
+    showResult('error', { error: e.message, detail: 'Could not connect to order service. The service mesh may be experiencing issues.' });
+  } finally {
+    btn.style.display = '';
+    proc.classList.remove('show');
+  }
+}
+
+function showResult(type, data) {
+  const overlay = document.getElementById('orderOverlay');
+  const modal = document.getElementById('orderModal');
+  overlay.classList.add('show');
+  modal.className = 'order-modal ' + type;
+  if (type === 'success') {
+    modal.innerHTML = `
+      <h2>Order Confirmed!</h2>
+      <p>Order <strong>#${data.orderId}</strong> has been placed successfully.</p>
+      <div class="tracking-box">
+        <svg class="ups-shield" viewBox="0 0 24 28" fill="none">
+          <path d="M12 0L0 4v12c0 7 12 12 12 12s12-5 12-12V4L12 0z" fill="#644117"/>
+          <path d="M12 3L3 6v9.5c0 5.5 9 9.5 9 9.5s9-4 9-9.5V6L12 3z" fill="#FFB500"/>
+          <path d="M7 14v-3a5 5 0 0110 0v3" stroke="#644117" stroke-width="1.5" fill="none"/>
+          <rect x="6" y="13" width="12" height="8" rx="1" fill="#644117"/>
+        </svg>
+        <div class="info">
+          <div class="label">UPS Tracking Number</div>
+          <div class="number">${data.trackingNumber || 'Pending'}</div>
+        </div>
+      </div>
+      <p style="font-size:.85rem;color:#888">Estimated delivery: ${data.estimatedDelivery || '3-5 business days'}</p>
+      <button class="modal-close-btn" onclick="closeResult()">Continue Shopping</button>`;
+  } else {
+    modal.innerHTML = `
+      <h2>Order Failed</h2>
+      <p>We couldn't process your order.</p>
+      <div class="error-details">${data.error || 'Unknown error'}${data.detail ? '\n\n' + data.detail : ''}</div>
+      <button class="modal-close-btn" onclick="closeResult()">Try Again</button>`;
+  }
+}
+
+function closeResult() {
+  document.getElementById('orderOverlay').classList.remove('show');
+}
+
+async function checkHealth() {
+  try {
+    const resp = await fetch('/api/health');
+    const data = await resp.json();
+    for (const [svc, status] of Object.entries(data.services || {})) {
+      const key = svc.replace(/_/g, '-').replace('service', '').replace('-', '');
+      const el = document.getElementById('st-' + key) ||
+                 document.getElementById('st-' + svc.replace(/_/g, '-'));
+      if (el) el.classList.add(status === 'ok' ? 'ok' : 'err');
+    }
+    if (data.services) {
+      document.getElementById('st-order').classList.add('ok');
+    }
+  } catch {
+    ['order', 'inventory', 'shipping'].forEach(s => {
+      document.getElementById('st-' + s).classList.add('err');
+    });
+  }
+}
+
+renderProducts();
+updateCart();
+checkHealth();
+</script>
+</body>
+</html>

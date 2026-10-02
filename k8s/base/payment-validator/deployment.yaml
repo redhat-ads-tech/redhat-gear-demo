@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-validator
+  namespace: payment-services
+  labels:
+    app: payment-validator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment-validator
+  template:
+    metadata:
+      labels:
+        app: payment-validator
+    spec:
+      containers:
+        - name: payment-validator
+          image: quay.io/redhat-ads-tech/redhat-gear-payment-validator:latest
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi

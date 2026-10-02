@@ -1,0 +1,24 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: gear-routing
+  namespace: redhat-gear
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - gear-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /api/
+      route:
+        - destination:
+            host: order-service
+            port:
+              number: 8080
+    - route:
+        - destination:
+            host: frontend
+            port:
+              number: 8080

@@ -1,0 +1,35 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: redhat-gear-alerts
+  namespace: redhat-gear
+spec:
+  groups:
+    - name: redhat-gear.rules
+      rules:
+        - alert: OrderErrorRateHigh
+          expr: |
+            (
+              sum(rate(istio_requests_total{destination_service_name="order-service",response_code=~"5.."}[2m]))
+              /
+              sum(rate(istio_requests_total{destination_service_name="order-service"}[2m]))
+            ) > 0.1
+          for: 2m
+          labels:
+            severity: critical
+            namespace: redhat-gear
+          annotations:
+            summary: "Order service error rate is above 10%"
+            description: "The order-service in the redhat-gear namespace has an HTTP 5xx error rate of {{ $value | humanizePercentage }}, exceeding the 10% threshold. Investigate upstream dependencies."
+        - alert: InventoryServiceDown
+          expr: |
+            up{job="inventory-service", namespace="redhat-gear"} == 0
+            or
+            absent(up{job="inventory-service", namespace="redhat-gear"})
+          for: 1m
+          labels:
+            severity: warning
+            namespace: redhat-gear
+          annotations:
+            summary: "Inventory service health check failing"
+            description: "The inventory-service in the redhat-gear namespace has been unreachable for more than 1 minute."

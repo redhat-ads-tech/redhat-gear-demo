@@ -1,0 +1,54 @@
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: frontend
+  namespace: redhat-gear
+spec:
+  host: frontend
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+---
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: order-service
+  namespace: redhat-gear
+spec:
+  host: order-service
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+---
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: inventory-service
+  namespace: redhat-gear
+spec:
+  host: inventory-service
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+---
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: shipping-service
+  namespace: redhat-gear
+spec:
+  host: shipping-service
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+---
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: payment-validator
+  namespace: payment-services
+spec:
+  host: payment-validator.payment-services.svc.cluster.local
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL

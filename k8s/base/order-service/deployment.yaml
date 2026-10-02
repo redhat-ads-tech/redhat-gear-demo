@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+  namespace: redhat-gear
+  labels:
+    app: order-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-service
+  template:
+    metadata:
+      labels:
+        app: order-service
+    spec:
+      containers:
+        - name: order-service
+          image: quay.io/redhat-ads-tech/redhat-gear-order-service:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: INVENTORY_SERVICE_URL
+              value: "http://inventory-service:8080"
+            - name: SHIPPING_SERVICE_URL
+              value: "http://shipping-service:8080"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi

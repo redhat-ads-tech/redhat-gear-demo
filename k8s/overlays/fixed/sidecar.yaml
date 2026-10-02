@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1
+kind: Sidecar
+metadata:
+  name: inventory-service-sidecar
+  namespace: redhat-gear
+spec:
+  workloadSelector:
+    labels:
+      app: inventory-service
+  egress:
+    - hosts:
+        - "istio-system/*"
+        - "redhat-gear/shipping-service.redhat-gear.svc.cluster.local"
+        - "redhat-gear/order-service.redhat-gear.svc.cluster.local"
+        - "payment-services/payment-validator.payment-services.svc.cluster.local"
