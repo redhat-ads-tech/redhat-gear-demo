@@ -11,7 +11,25 @@ spec:
         - action: keep
           regex: istio-proxy
           sourceLabels:
-            - __meta_kubernetes_container_name
+            - __meta_kubernetes_pod_container_name
+        - action: keep
+          sourceLabels:
+            - __meta_kubernetes_pod_annotationpresent_prometheus_io_scrape
+        - action: replace
+          regex: (\d+);((([0-9]+?)(\.|$)){4})
+          replacement: $2:$1
+          sourceLabels:
+            - __meta_kubernetes_pod_annotation_prometheus_io_port
+            - __meta_kubernetes_pod_ip
+          targetLabel: __address__
+        - action: replace
+          sourceLabels:
+            - __meta_kubernetes_namespace
+          targetLabel: namespace
+        - action: replace
+          sourceLabels:
+            - __meta_kubernetes_pod_name
+          targetLabel: pod_name
   selector:
     matchExpressions:
       - key: istio-prometheus-ignore
