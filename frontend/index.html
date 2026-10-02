@@ -303,20 +303,15 @@ function showResult(type, data) {
   if (type === 'success') {
     modal.innerHTML = `
       <h2>Order Confirmed!</h2>
-      <p>Order <strong>#${data.orderId}</strong> has been placed successfully.</p>
+      <p>Order <strong>#${data.order_id}</strong> has been placed successfully.</p>
       <div class="tracking-box">
-        <svg class="ups-shield" viewBox="0 0 24 28" fill="none">
-          <path d="M12 0L0 4v12c0 7 12 12 12 12s12-5 12-12V4L12 0z" fill="#644117"/>
-          <path d="M12 3L3 6v9.5c0 5.5 9 9.5 9 9.5s9-4 9-9.5V6L12 3z" fill="#FFB500"/>
-          <path d="M7 14v-3a5 5 0 0110 0v3" stroke="#644117" stroke-width="1.5" fill="none"/>
-          <rect x="6" y="13" width="12" height="8" rx="1" fill="#644117"/>
-        </svg>
+        <img src="/images/ups-logo.png" alt="UPS" style="height:28px">
         <div class="info">
           <div class="label">UPS Tracking Number</div>
-          <div class="number">${data.trackingNumber || 'Pending'}</div>
+          <div class="number">${(data.shipping && data.shipping.tracking_number) || 'Pending'}</div>
         </div>
       </div>
-      <p style="font-size:.85rem;color:#888">Estimated delivery: ${data.estimatedDelivery || '3-5 business days'}</p>
+      <p style="font-size:.85rem;color:#888">Estimated delivery: ${(data.shipping && data.shipping.estimated_delivery) || '3-5 business days'}</p>
       <button class="modal-close-btn" onclick="closeResult()">Continue Shopping</button>`;
   } else {
     modal.innerHTML = `
