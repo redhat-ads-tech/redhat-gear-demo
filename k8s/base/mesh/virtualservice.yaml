@@ -12,6 +12,8 @@ spec:
     - match:
         - uri:
             prefix: /api/
+      rewrite:
+        uri: /
       route:
         - destination:
             host: order-service
