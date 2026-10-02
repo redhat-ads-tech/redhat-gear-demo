@@ -3,4 +3,4 @@ kind: Namespace
 metadata:
   name: payment-services
   labels:
-    istio-injection: enabled
+    istio.io/rev: default-v1-30-4

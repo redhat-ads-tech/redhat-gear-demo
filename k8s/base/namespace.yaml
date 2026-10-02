@@ -3,4 +3,4 @@ kind: Namespace
 metadata:
   name: redhat-gear
   labels:
-    istio-injection: enabled
+    istio.io/rev: default-v1-30-4
