@@ -10,11 +10,11 @@ spec:
         - alert: OrderErrorRateHigh
           expr: |
             (
-              sum(rate(istio_requests_total{destination_service_name="order-service",response_code=~"5.."}[2m]))
+              sum(rate(istio_requests_total{destination_service_name="order-service",response_code=~"5.."}[30s]))
               /
-              sum(rate(istio_requests_total{destination_service_name="order-service"}[2m]))
+              sum(rate(istio_requests_total{destination_service_name="order-service"}[30s]))
             ) > 0.1
-          for: 2m
+          for: 15s
           labels:
             severity: critical
             namespace: redhat-gear
@@ -24,11 +24,11 @@ spec:
         - alert: InventoryServiceErrorRate
           expr: |
             (
-              sum(rate(istio_requests_total{destination_service_name="inventory-service",response_code=~"5..",namespace="redhat-gear"}[2m]))
+              sum(rate(istio_requests_total{destination_service_name="inventory-service",response_code=~"5..",namespace="redhat-gear"}[30s]))
               /
-              sum(rate(istio_requests_total{destination_service_name="inventory-service",namespace="redhat-gear"}[2m]))
+              sum(rate(istio_requests_total{destination_service_name="inventory-service",namespace="redhat-gear"}[30s]))
             ) > 0.1
-          for: 1m
+          for: 15s
           labels:
             severity: warning
             namespace: redhat-gear
