@@ -7,6 +7,8 @@ spec:
   workloadSelector:
     labels:
       app: inventory-service
+  outboundTrafficPolicy:
+    mode: REGISTRY_ONLY
   egress:
     - hosts:
         - "istio-system/*"
