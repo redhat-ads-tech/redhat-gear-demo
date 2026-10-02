@@ -9,9 +9,9 @@ def log(level, message, trace_id=""):
 
 def call_service(url, data=None, trace_id="", timeout=5):
     headers = {"Content-Type": "application/json", "X-Trace-ID": trace_id}
-    body = json.dumps(data).encode() if data else None
+    body = json.dumps(data).encode() if data is not None else None
     req = urllib.request.Request(url, data=body, headers=headers,
-                                method="POST" if data else "GET")
+                                method="POST" if data is not None else "GET")
     resp = urllib.request.urlopen(req, timeout=timeout)
     return json.loads(resp.read())
 
