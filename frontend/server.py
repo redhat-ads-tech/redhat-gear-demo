@@ -16,6 +16,11 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self._proxy("GET")
         elif self.path == "/" or self.path == "/index.html":
             self._serve_file("index.html", "text/html")
+        elif self.path.startswith("/images/"):
+            name = self.path[len("/images/"):]
+            content_types = {".png": "image/png", ".jpg": "image/jpeg", ".svg": "image/svg+xml"}
+            ext = pathlib.Path(name).suffix
+            self._serve_file(f"images/{name}", content_types.get(ext, "application/octet-stream"))
         else:
             self.send_error(404)
 
