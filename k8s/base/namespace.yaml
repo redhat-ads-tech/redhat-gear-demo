@@ -5,3 +5,4 @@ metadata:
   labels:
     istio.io/rev: default-v1-30-4
     openshift.io/cluster-monitoring: "true"
+    openshift.io/user-monitoring: "true"
